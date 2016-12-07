@@ -5,6 +5,7 @@ import (
 	"github.com/russross/blackfriday"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -34,11 +35,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// Redirect paths without trailing slashes that aren't files
 	if !strings.Contains(r.URL.Path, ".") && !strings.HasSuffix(r.URL.Path, "/") {
 		http.Redirect(w, r, r.URL.Path+"/", 301)
+		return
 	}
 
 	var content []byte
 
 	for _, file := range pathToFiles(r.URL.Path[1:]) {
+		fmt.Printf("%s\n", file)
+
+		matches, err := filepath.Glob(file)
+
+		if err == nil && len(matches) != 0 {
+			file = matches[0]
+		}
+
 		fmt.Printf("%s\n", file)
 
 		content, _ = ioutil.ReadFile(file)
